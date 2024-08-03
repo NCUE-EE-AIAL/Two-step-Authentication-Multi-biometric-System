@@ -99,7 +99,7 @@ def rescnn_model(input_shape=(NUM_FRAMES,64, 1),    #input_shape(32,32,3)
         return x_
 
     inputs = Input(shape=input_shape)  # TODO the network should be definable without explicit batch shape
-    x = cnn_component(inputs)  # .shape = (BATCH_SIZE , num_frames/8, 64/8, 512)
+    x = cnn_component(inputs)  # .shape = (BATCH_SIZE , num_frames/16, 64/8, 512)
     x = Lambda(lambda y: K.reshape(y, (-1, math.ceil(num_frames / 16), 2048)), name='reshape')(x)
     x = Lambda(lambda y: K.mean(y, axis=1), name='average')(x)  #shape = (BATCH_SIZE, 512)
     x = Dense(512, name='affine')(x)  # .shape = (BATCH_SIZE , 512)

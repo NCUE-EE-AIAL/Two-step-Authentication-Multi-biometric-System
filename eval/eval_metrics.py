@@ -19,7 +19,7 @@ def calculate_roc(thresholds, sims, labels):
 
     tprs = np.zeros((nrof_thresholds))
     fprs = np.zeros((nrof_thresholds))
-    acc_train = np.zeros((nrof_thresholds))
+    acc = np.zeros((nrof_thresholds))
     precisions= np.zeros((nrof_thresholds))
     fms = np.zeros((nrof_thresholds))
     accuracy = 0.0
@@ -28,12 +28,12 @@ def calculate_roc(thresholds, sims, labels):
     # Find the best threshold for the fold
     for threshold_idx, threshold in enumerate(thresholds):
         tprs[threshold_idx], fprs[threshold_idx],precisions[threshold_idx],\
-        fms[threshold_idx], acc_train[threshold_idx] = calculate_accuracy(threshold, sims, labels)
+        fms[threshold_idx], acc[threshold_idx] = calculate_accuracy(threshold, sims, labels)
 
     bestindex = np.argmax(fms)
     bestfm = fms[bestindex]  # f1 score
     besttpr = tprs[bestindex]  # recall
-    bestacc = acc_train[bestindex]
+    bestacc = acc[bestindex]
     bestprecision = precisions[bestindex]  # precision
 
     return bestfm, besttpr, bestacc, bestprecision

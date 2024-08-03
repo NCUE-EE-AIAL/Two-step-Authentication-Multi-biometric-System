@@ -18,13 +18,12 @@ num_neg = c.TEST_NEGATIVE_No
 def normalize_scores(m,epsilon=1e-12):
     return (m - np.mean(m)) / max(np.std(m),epsilon)
 
+
+# different to clipped_audio in training process.
+# to keep the validation process stable.
 def clipped_audio(x, num_frames=c.NUM_FRAMES):
-    if x.shape[0] > num_frames + 20:
-        bias = np.random.randint(20, x.shape[0] - num_frames)
-        clipped_x = x[bias: num_frames + bias]
-    elif x.shape[0] > num_frames:
-        bias = np.random.randint(0, x.shape[0] - num_frames)
-        clipped_x = x[bias: num_frames + bias]
+    if x.shape[0] > num_frames:
+        clipped_x = x[: num_frames]
     else:
         clipped_x = x
 
@@ -39,7 +38,7 @@ def create_test_data(test_dir,check_partial):
     num_triplets = len(unique_speakers)
     if check_partial:
         num_neg = 49
-        num_triplets = min(num_triplets, 74)
+        num_triplets = min(num_triplets, 40)
     test_batch = None
     for ii in range(num_triplets):
         anchor_positive_file = libri[libri['speaker_id'] == unique_speakers[ii]]
@@ -95,7 +94,7 @@ def call_similar(x):
         similar.extend(sim)
     return np.array(similar)
 
-def eval_model(model, train_batch_size=c.BATCH_SIZE * c.TRIPLET_PER_BATCH, test_dir= c.TEST_DIR, check_partial=False, gru_model=None):
+def eval_model(model, train_batch_size=c.BATCH_SIZE * c.TRIPLET_PER_BATCH, test_dir= c.TEST_DIR, check_partial=False):
     x, y_true = create_test_data(test_dir,check_partial)
     batch_size = x.shape[0]
     b = x[0]
@@ -122,20 +121,7 @@ def eval_model(model, train_batch_size=c.BATCH_SIZE * c.TRIPLET_PER_BATCH, test_
             embedding = embed.copy()
         else:
             embedding = np.concatenate([embedding, embed], axis=0)
-
     y_pred = call_similar(embedding)
-    if gru_model is not None:
-        embedding_gru = None
-        for ep in range(test_epoch):
-            x_ = x[ep * train_batch_size: (ep + 1) * train_batch_size]
-            embed = model.predict_on_batch(x_)
-            if embedding_gru is None:
-                embedding_gru = embed.copy()
-            else:
-                embedding_gru = np.concatenate([embedding_gru, embed], axis=0)
-        y_pred_gru = call_similar(embedding_gru)
-
-        y_pred = (normalize_scores(y_pred) + normalize_scores(y_pred_gru))/2  # or   y_pred = (y_pred + y_pred_gru)/2
 
     nrof_pairs = min(len(y_pred), len(y_true))
     y_pred = y_pred[:nrof_pairs]
@@ -145,28 +131,16 @@ def eval_model(model, train_batch_size=c.BATCH_SIZE * c.TRIPLET_PER_BATCH, test_
 
 
 if __name__ == '__main__':
-    model = convolutional_model_simple()
+    model = rescnn_model()
     model.compile(optimizer='adam', loss=deep_speaker_loss)
-    gru_model = None
     last_checkpoint = get_last_checkpoint_if_any(c.CHECKPOINT_FOLDER)
-    last_checkpoint = "checkpoints/best_checkpoint/best_model_58_62292_0.02675.h5"
-    # best_model_20_21480_0.08949.h5" \\ model_40_42960_0.01556.h5
     if last_checkpoint is not None:
         print('Found checkpoint [{}]. Resume from here...'.format(last_checkpoint))
         model.load_weights(last_checkpoint)
-    if c.COMBINE_MODEL:
-        gru_model = recurrent_model()
-        last_checkpoint = get_last_checkpoint_if_any(c.GRU_CHECKPOINT_FOLDER)
-        if last_checkpoint is not None:
-            print('Found checkpoint [{}]. Resume from here...'.format(last_checkpoint))
-            gru_model.load_weights(last_checkpoint)
 
     train_batch_size = c.BATCH_SIZE * c.TRIPLET_PER_BATCH
-    # fm, tpr, acc, eer, test_loss = eval_model(model, train_batch_size, test_dir=c.DATASET_DIR, check_partial=True, gru_model=gru_model)
-    # print("f-measure = {0}, true positive rate = {1}, accuracy = {2}, equal error rate = {3}".format(fm, tpr, acc, eer))
-    # print("loss = {0}".format(test_loss))
-    for _ in range(20):
-        fm, tpr, acc, eer, precision = eval_model(model, train_batch_size, test_dir=c.TEST_DIR, check_partial=True, gru_model=gru_model)
+    for _ in range(10):
+        fm, tpr, acc, eer, precision = eval_model(model, train_batch_size, test_dir=c.TEST_DIR, check_partial=True)
         print("f-measure = {0}, Recall = {1}, accuracy = {2}, equal error rate = {3}".format(fm, tpr, acc, eer))
         print("precision = {0}".format(precision))
         print("---------------------------------------------------")

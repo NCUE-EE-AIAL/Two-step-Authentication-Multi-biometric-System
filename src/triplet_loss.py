@@ -43,5 +43,6 @@ def deep_speaker_loss(y_true, y_pred):
     san = batch_cosine_similarity(anchor, negative_ex)
 
     loss = K.maximum(san - sap + alpha, 0.0)
-    total_loss = tf.reduce_mean(loss)
+    # total_loss = tf.reduce_mean(loss)
+    total_loss = K.sum(loss)
     return total_loss

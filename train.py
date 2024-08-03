@@ -77,7 +77,6 @@ def main(libri_dir=c.DATASET_DIR):
     orig_time = time()
     model = rescnn_model(input_shape=input_shape, batch_size=batch_size, num_frames=num_frames)
     logging.info(model.summary())
-    gru_model = None
     grad_steps = 0
     current_epoch = 0
 
@@ -89,8 +88,8 @@ def main(libri_dir=c.DATASET_DIR):
         current_epoch = int(last_checkpoint.split('_')[-3])
         logging.info('[DONE]')
 
-    adam = Adam(learning_rate=1e-7, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
-    model.compile(optimizer=adam, loss=deep_speaker_loss)
+    # adam = Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+    model.compile(optimizer="adam", loss=deep_speaker_loss)
     print("model_build_time",time()-orig_time)
     logging.info('Starting training...')
     lasteer = 10
@@ -99,12 +98,12 @@ def main(libri_dir=c.DATASET_DIR):
 
 
     total_epoch = 60
-    random_pretrain_epoch = 50
+    random_pretrain_epoch = 20
     step_per_epoch = len(libri) // batch_size
     while current_epoch <= total_epoch:
         logging.info('== Presenting step #{0}'.format(grad_steps))
+
         # random batch or select batch
-        print("current_epoch",current_epoch)
         if current_epoch <= random_pretrain_epoch:
             x, y = next(iter(generator))
         else:
@@ -130,7 +129,7 @@ def main(libri_dir=c.DATASET_DIR):
         # calculate training results
         fm, acc, eer = [], [], []
         for i in range(3):
-            fm_, _, acc_, eer_, _ = eval_model(model, train_batch_size, test_dir=c.DATASET_DIR, check_partial=True, gru_model=gru_model)
+            fm_, _, acc_, eer_, _ = eval_model(model, train_batch_size, test_dir=c.DATASET_DIR, check_partial=True)
             fm.append(fm_)
             acc.append(acc_)
             eer.append(eer_)
@@ -150,7 +149,7 @@ def main(libri_dir=c.DATASET_DIR):
 
         fm, recall, acc, eer, precision = [], [], [], [], []
         for i in range(3):
-            fm_, recall_, acc_, eer_, precision_ = eval_model(model, train_batch_size, test_dir=c.TEST_DIR, gru_model=gru_model)
+            fm_, recall_, acc_, eer_, precision_ = eval_model(model, train_batch_size, test_dir=c.TEST_DIR)
             fm.append(fm_)
             recall.append(recall_)
             acc.append(acc_)
@@ -179,9 +178,11 @@ def main(libri_dir=c.DATASET_DIR):
                 logging.info("removing old model: {}".format(file))
                 os.remove(file)
             model.save_weights(c.BEST_CHECKPOINT_FOLDER+'/best_model_{0}_{1}_{2:.5f}.h5'.format(current_epoch, grad_steps, eer))
-
-        if current_epoch <= random_pretrain_epoch:
+        if current_epoch != random_pretrain_epoch and current_epoch <= random_pretrain_epoch:
             generator.on_epoch_end()
+        elif current_epoch == random_pretrain_epoch + 1:
+            generator.stop()
+
         grad_steps += 1
         current_epoch += 1
 

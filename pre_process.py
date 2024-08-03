@@ -11,7 +11,7 @@ import pickle
 from multiprocessing import Pool
 from pydub import AudioSegment
 
-import src.silence_detector
+import src.silence_detector as silence_detector
 import src.constants as c
 from src.constants import SAMPLE_RATE
 from time import time
