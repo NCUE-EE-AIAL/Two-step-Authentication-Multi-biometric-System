@@ -1,9 +1,17 @@
 # TEEP2023_Mutimodal_Biometric_Authentication
-# dataset: 
-train file: train-clean-100 + train-clean-360 + train-clean-500
+# Dataset: 
+Face image: the raw data are provided by the student in EE's class, which is revealed in dataset folder.  
+Voice: LibriSpeech (Link: https://www.openslr.org/12) (train-clean-360 , test-clean)
 
-test file: test-other, test-clean, dev-clean, dev-other
+# Face Recognition
+## Model Architecture
+![face model](https://github.com/wry87c/TEEP2023_Mutimodal_Biometric_Authentication/blob/main/doc/graph_hr.png)
 
+## How to use
+
+
+# Voice Recognition
+## Model Architecture
 ```mermaid
 graph TD
     subgraph CNNs
@@ -26,14 +34,33 @@ graph TD
     end
 
     subgraph Identity Block
-        A[Input Tensor] --> B[Conv2D Layer: kernel_size=3]
-        A --> |Add Input Tensor| H
-        B --> C[BatchNormalization]
-        C --> D[Clipped ReLU]
-        D --> E[Conv2D Layer: kernel_size=3]
-        E --> F[BatchNormalization]
-
-        F --> H[Clipped ReLU]
-        H --> I[Output Tensor]
+        A[Input Tensor] --> B[Conv2D Layer: kernel_size=1]
+        A[Input Tensor] --> J[+]
+        B --> C[BatchNorm -> Clipped ReLU]
+        C --> E[Conv2D Layer: kernel_size=3]
+        E --> F[BatchNorm -> Clipped ReLU]
+        F --> H[Conv2D Layer: kernel_size=1]
+        H --> I[BatchNormalization]
+        I --> J
+        J --> K[Clipped ReLU]
+        K --> L[Output Tensor]
     end
+
 ```
+## How To Use
+### pre_process.py
+This script processes voice files named in the format "(speaker name)-(...)-(number)". It's configured for the Librispeech dataset and includes functions to convert .flac files to .wav. Additionally, it employs VAD (Voice Activity Detection) and Fbank (Filterbank features) to enhance model performance.
+
+### train.py
+To optimize performance, training is divided into two stages: initial training with random batches for 20 epochs to achieve acceptable results, followed by 40 epochs of training with selected batches to refine and improve the model further.
+
+# Result
+![face result](https://github.com/wry87c/TEEP2023_Mutimodal_Biometric_Authentication/blob/main/doc/training_graph.png)
+Graph for epochs of face recognition model showing (a) Training and validation accuracy (b) Training and validation loss.  
+  
+  
+![voice result](https://github.com/wry87c/TEEP2023_Mutimodal_Biometric_Authentication/blob/main/doc/training_graph_voice.png)
+Graph for epochs of voice recognition model showing (a) Training and validation EER (b) Training and validation loss.
+
+# Acknowledge
+This research is supported by TEEP (Taiwan Experience Education Program)
