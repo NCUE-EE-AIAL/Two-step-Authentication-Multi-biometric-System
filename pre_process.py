@@ -3,11 +3,10 @@
 
 import os
 from glob import glob
-from python_speech_features import fbank, delta
+from python_speech_features import fbank
 import librosa
 import numpy as np
 import pandas as pd
-import pickle
 from multiprocessing import Pool
 from pydub import AudioSegment
 

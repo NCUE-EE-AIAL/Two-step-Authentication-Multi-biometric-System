@@ -1,24 +1,12 @@
-
-# train-clean-100: 251 speaker, 28539 utterance
-# train-clean-360: 921 speaker, 104104 utterance
-# test-clean: 40 speaker, 2620 utterance
-# merged test: 80 speaker, 5323 utterance
-# batchisize 32*3 : train on triplet: 5s - > 3.1s/steps , softmax pre train: 3.1 s/steps
-
-
 import logging
 from time import time, sleep
 import numpy as np
 import sys
 import os
-import random
-from tensorflow.keras.optimizers import Adam
-from keras.layers.core import Dense
-from keras.models import Model
 
 import src.constants as c
 import src.select_batch as select_batch
-from pre_process import data_catalog, preprocess_and_save
+from pre_process import data_catalog
 from src.models import rescnn_model
 from src.random_batch import MiniBatchGenerator
 from src.triplet_loss import deep_speaker_loss
@@ -26,7 +14,7 @@ from src.utils import get_last_checkpoint_if_any, create_dir_and_delete_content,
 from test_model import eval_model
 
 
-def create_dict(files,labels,spk_uniq):
+def create_dict(files, labels, spk_uniq):
     train_dict = {}
     for i in range(len(spk_uniq)):
         train_dict[spk_uniq[i]] = []
@@ -37,8 +25,9 @@ def create_dict(files,labels,spk_uniq):
     for spk in spk_uniq:
         if len(train_dict[spk]) < 2:
             train_dict.pop(spk)
-    unique_speakers=list(train_dict.keys())
+    unique_speakers = list(train_dict.keys())
     return train_dict, unique_speakers
+
 
 def main(libri_dir=c.DATASET_DIR):
 
@@ -49,13 +38,13 @@ def main(libri_dir=c.DATASET_DIR):
         logging.warning('Cannot find npy files, we will load audio, extract features and save it as npy file')
         logging.warning('please preprocess the data first through preprocess.py')
 
-    # traing data select
+    # training data select
     unique_speakers = libri['speaker_id'].unique()
     spk_utt_dict, unique_speakers = create_dict(libri['filename'].values, libri['speaker_id'].values, unique_speakers)
     select_batch.create_data_producer(unique_speakers, spk_utt_dict)
     sleep(5)
 
-    #train data random
+    # train data random
     generator = MiniBatchGenerator(libri, unique_speakers)
     generator.create_data_producer()
     sleep(1)
@@ -71,7 +60,6 @@ def main(libri_dir=c.DATASET_DIR):
     b = x[0]
     num_frames = b.shape[0]
     train_batch_size = batch_size
-    #batch_shape = [batch_size * num_frames] + list(b.shape[1:])  # A triplet has 3 parts.
     input_shape = (num_frames, b.shape[1], b.shape[2])
     logging.info('num_frames = {}'.format(num_frames))
     logging.info('batch size: {}'.format(batch_size))
@@ -93,12 +81,11 @@ def main(libri_dir=c.DATASET_DIR):
 
     # adam = Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
     model.compile(optimizer="adam", loss=deep_speaker_loss)
-    print("model_build_time",time()-orig_time)
+    print("model_build_time", time()-orig_time)
     logging.info('Starting training...')
     lasteer = 10
     eer = 1
     train_loss_list = []
-
 
     total_epoch = 60
     random_pretrain_epoch = 20
@@ -113,14 +100,9 @@ def main(libri_dir=c.DATASET_DIR):
             x, _ = select_batch.best_batch(model, batch_size=c.BATCH_SIZE)
             y = np.random.uniform(size=(x.shape[0], 1))
 
-        # If "ValueError: Error when checking target: expected ln to have shape (None, 512) but got array with shape (96, 1)"
-        # please modify line to following line
-        # y = np.random.uniform(size=(x.shape[0], 512))
         orig_time = time()
-
         train_loss_ = model.train_on_batch(x, y)
         train_loss_list.append(train_loss_)
-
         logging.info('== Processed in {0:.2f}s , train loss = {1:.2f}.'.format(time() - orig_time, train_loss_))
 
         # VALIDATE EVERY EPOCH
@@ -150,23 +132,19 @@ def main(libri_dir=c.DATASET_DIR):
             val_loss_ = model.evaluate(x, y, train_batch_size, verbose=0)
             val_loss_list.append(val_loss_)
 
-        fm, recall, acc, eer, precision = [], [], [], [], []
+        fm, acc, eer = [], [], []
         for i in range(3):
-            fm_, recall_, acc_, eer_, precision_ = eval_model(model, train_batch_size, test_dir=c.TEST_DIR)
+            fm_, _, acc_, eer_, _ = eval_model(model, train_batch_size, test_dir=c.TEST_DIR)
             fm.append(fm_)
-            recall.append(recall_)
             acc.append(acc_)
             eer.append(eer_)
-            precision.append(precision_)
         acc, eer = np.mean(acc), np.mean(eer)
-        fm, recall, precision, val_loss = np.mean(fm), np.mean(recall), np.mean(precision), np.mean(val_loss_list)
+        fm, val_loss = np.mean(fm), np.mean(val_loss_list)
         logging.info('== Testing model after batch #{0}'.format(grad_steps))
         logging.info('test EER = {0:.3f}, F-measure = {1:.3f}'.format(eer, fm))
         logging.info('Accuracy = {0:.3f}, Validation Loss = {1:.3f}'.format(acc, val_loss))
         with open(c.CHECKPOINT_FOLDER + '/val_acc_eer_loss.txt', "a") as f:
             f.write("{0},{1},{2},{3}\n".format(current_epoch, acc, eer, val_loss))
-        with open(c.CHECKPOINT_FOLDER + '/val_prec_recall_fm.txt', "a") as f:
-            f.write("{0},{1},{2},{3}\n".format(current_epoch, precision, recall, fm))
 
         # save checkpoint
         # checkpoints are really heavy so let's just keep the last one.
@@ -189,7 +167,6 @@ def main(libri_dir=c.DATASET_DIR):
 
         grad_steps += 1
         current_epoch += 1
-
 
 
 if __name__ == '__main__':

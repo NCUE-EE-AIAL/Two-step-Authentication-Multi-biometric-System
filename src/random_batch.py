@@ -23,7 +23,7 @@ def clipped_audio(x, num_frames=c.NUM_FRAMES):
 
 
 class MiniBatchGenerator:
-    def __init__(self, libri, unique_speakers=None, batch_size=c.BATCH_SIZE, num_frames=c.NUM_FRAMES, queue_size=15, num_producers=4):
+    def __init__(self, libri, unique_speakers=None, batch_size=c.BATCH_SIZE, num_frames=c.NUM_FRAMES, queue_size=c.RANDOM_QUEUE_SIZE, num_producers=c.NUM_PRODUCERS):
         self.libri = libri
         self.batch_size = batch_size
         self.num_frames = num_frames

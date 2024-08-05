@@ -4,14 +4,11 @@ import keras.backend as K
 import math
 from keras import layers
 from keras import regularizers
-from keras.layers import Input, GRU
+from keras.layers import Input
 from keras.layers.convolutional import Conv2D
-from keras.layers.core import Lambda, Dense, RepeatVector
-from keras.layers.core import Reshape
+from keras.layers.core import Lambda, Dense
 from keras.layers import BatchNormalization
 from keras.models import Model
-from tensorflow.keras.utils import plot_model
-import tensorflow as tf
 
 from src.constants import *
 

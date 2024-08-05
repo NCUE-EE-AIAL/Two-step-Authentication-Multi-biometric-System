@@ -73,7 +73,7 @@ def preprocess(unique_speakers, spk_utt_dict, candidates=c.CANDIDATES_PER_BATCH)
 
     return np.array(x), np.array(labels)
 
-data_queue = Queue(maxsize=c.DATA_STACK_SIZE)
+data_queue = Queue(maxsize=c.SELECT_QUEUE_SIZE)
 def create_data_producer(unique_speakers, spk_utt_dict, candidates=c.CANDIDATES_PER_BATCH, num_producers=c.NUM_PRODUCERS):
     for _ in range(num_producers):
         producer = threading.Thread(target=add_to_queue, args=(unique_speakers, spk_utt_dict, candidates))
