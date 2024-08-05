@@ -5,7 +5,7 @@ Voice: LibriSpeech (Link: https://www.openslr.org/12) (train-clean-360 , test-cl
 
 # Face Recognition
 ## Model Architecture
-![face model](https://github.com/wry87c/TEEP2023_Mutimodal_Biometric_Authentication/blob/main/doc/graph_hr.png)
+![face model](https://github.com/NCUE-EE-AIAL/Two-Step-Muti-Biometric-Authentication-System/blob/main/doc/graph_hr.png)
 
 ## How to use
 
@@ -55,11 +55,11 @@ This script processes voice files named in the format "(speaker name)-(...)-(num
 To optimize performance, training is divided into two stages: initial training with random batches for 20 epochs to achieve acceptable results, followed by 40 epochs of training with selected batches to refine and improve the model further.
 
 # Result
-![face result](https://github.com/wry87c/TEEP2023_Mutimodal_Biometric_Authentication/blob/main/doc/training_graph.png)
+![face result](https://github.com/NCUE-EE-AIAL/Two-Step-Muti-Biometric-Authentication-System/blob/main/doc/training_graph.png)
 Graph for epochs of face recognition model showing (a) Training and validation accuracy (b) Training and validation loss.  
   
   
-![voice result](https://github.com/wry87c/TEEP2023_Mutimodal_Biometric_Authentication/blob/main/doc/training_graph_voice.png)
+![voice result](https://github.com/NCUE-EE-AIAL/Two-Step-Muti-Biometric-Authentication-System/blob/main/doc/training_graph_voice.png)
 Graph for epochs of voice recognition model showing (a) Training and validation EER (b) Training and validation loss.
 
 # Acknowledge
