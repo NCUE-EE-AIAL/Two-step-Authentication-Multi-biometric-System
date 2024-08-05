@@ -134,15 +134,16 @@ if __name__ == '__main__':
     model = rescnn_model()
     model.compile(optimizer='adam', loss=deep_speaker_loss)
     last_checkpoint = get_last_checkpoint_if_any(c.CHECKPOINT_FOLDER)
+    # last_checkpoint = "checkpoints/model_59_63366_0.25373.h5"
     if last_checkpoint is not None:
         print('Found checkpoint [{}]. Resume from here...'.format(last_checkpoint))
         model.load_weights(last_checkpoint)
 
     train_batch_size = c.BATCH_SIZE * c.TRIPLET_PER_BATCH
     for _ in range(10):
-        fm, tpr, acc, eer, precision = eval_model(model, train_batch_size, test_dir=c.TEST_DIR, check_partial=True)
-        print("f-measure = {0}, Recall = {1}, accuracy = {2}, equal error rate = {3}".format(fm, tpr, acc, eer))
-        print("precision = {0}".format(precision))
+        fm, tpr, acc, eer, precision = eval_model(model, train_batch_size, test_dir=c.TEST_DIR)
+        print("accuracy = {0}, equal error rate = {1}".format(acc, eer))
+        print("f-measure = {0}, precision = {0}, Recall = {1}".format(fm, precision, tpr))
         print("---------------------------------------------------")
 
 

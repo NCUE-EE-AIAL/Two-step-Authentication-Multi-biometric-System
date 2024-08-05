@@ -7,7 +7,7 @@
 
 
 import logging
-from time import time
+from time import time, sleep
 import numpy as np
 import sys
 import os
@@ -20,7 +20,7 @@ import src.constants as c
 import src.select_batch as select_batch
 from pre_process import data_catalog, preprocess_and_save
 from src.models import rescnn_model
-from src.random_batch import stochastic_mini_batch, MiniBatchGenerator
+from src.random_batch import MiniBatchGenerator
 from src.triplet_loss import deep_speaker_loss
 from src.utils import get_last_checkpoint_if_any, create_dir_and_delete_content, plot_acc_eer_loss
 from test_model import eval_model
@@ -53,18 +53,21 @@ def main(libri_dir=c.DATASET_DIR):
     unique_speakers = libri['speaker_id'].unique()
     spk_utt_dict, unique_speakers = create_dict(libri['filename'].values, libri['speaker_id'].values, unique_speakers)
     select_batch.create_data_producer(unique_speakers, spk_utt_dict)
+    sleep(5)
 
     #train data random
-    generator = MiniBatchGenerator(libri, c.BATCH_SIZE, unique_speakers)
+    generator = MiniBatchGenerator(libri, unique_speakers)
+    generator.create_data_producer()
+    sleep(1)
 
     # validation data random
     val_libri = data_catalog(c.TEST_DIR)
     val_unique_speakers = val_libri['speaker_id'].unique()
-    val_generator = MiniBatchGenerator(val_libri, c.BATCH_SIZE, val_unique_speakers)
+    val_generator = MiniBatchGenerator(val_libri, val_unique_speakers, queue_size=1, num_producers=1)
+    val_generator.create_data_producer()
 
-    batch = stochastic_mini_batch(libri, batch_size=c.BATCH_SIZE, unique_speakers=unique_speakers)
     batch_size = c.BATCH_SIZE * c.TRIPLET_PER_BATCH
-    x, y = batch.to_inputs()
+    x, y = generator.get_batch()
     b = x[0]
     num_frames = b.shape[0]
     train_batch_size = batch_size
@@ -105,7 +108,7 @@ def main(libri_dir=c.DATASET_DIR):
 
         # random batch or select batch
         if current_epoch <= random_pretrain_epoch:
-            x, y = next(iter(generator))
+            x, y = generator.get_batch()
         else:
             x, _ = select_batch.best_batch(model, batch_size=c.BATCH_SIZE)
             y = np.random.uniform(size=(x.shape[0], 1))
@@ -118,7 +121,7 @@ def main(libri_dir=c.DATASET_DIR):
         train_loss_ = model.train_on_batch(x, y)
         train_loss_list.append(train_loss_)
 
-        logging.info('== Processed in {0:.2f}s by the network, training loss = {1}.'.format(time() - orig_time, train_loss_))
+        logging.info('== Processed in {0:.2f}s , train loss = {1:.2f}.'.format(time() - orig_time, train_loss_))
 
         # VALIDATE EVERY EPOCH
         # to continue or measure result in every epoch
@@ -143,7 +146,7 @@ def main(libri_dir=c.DATASET_DIR):
         # calculate validation results
         val_loss_list = []
         for i in range(10):
-            x, y = next(iter(val_generator))
+            x, y = val_generator.get_batch()
             val_loss_ = model.evaluate(x, y, train_batch_size, verbose=0)
             val_loss_list.append(val_loss_)
 
@@ -178,7 +181,8 @@ def main(libri_dir=c.DATASET_DIR):
                 logging.info("removing old model: {}".format(file))
                 os.remove(file)
             model.save_weights(c.BEST_CHECKPOINT_FOLDER+'/best_model_{0}_{1}_{2:.5f}.h5'.format(current_epoch, grad_steps, eer))
-        if current_epoch != random_pretrain_epoch and current_epoch <= random_pretrain_epoch:
+
+        if current_epoch <= random_pretrain_epoch:
             generator.on_epoch_end()
         elif current_epoch == random_pretrain_epoch + 1:
             generator.stop()
