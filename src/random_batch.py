@@ -9,7 +9,7 @@ from queue import Queue
 from time import sleep, time
 
 import src.constants as c
-from pre_process import data_catalog
+from voice_preprocessing import data_catalog
 
 
 def clipped_audio(x, num_frames=c.NUM_FRAMES):

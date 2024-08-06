@@ -3,5 +3,4 @@ data/
 audio/
 checkpoints/
 checkpoints_manual/
-checkpoints_sample/
 plot_acc_loss.py

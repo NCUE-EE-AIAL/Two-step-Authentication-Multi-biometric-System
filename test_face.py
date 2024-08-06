@@ -2,7 +2,7 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 from tensorflow.keras.models import load_model
-import face_detect_crop
+from image_preprocessing import face_crop
 import cv2
 
 model = load_model('face_model_vggface.h5')
@@ -16,7 +16,7 @@ if vc.isOpened():
 #img = cv2.imread(path)
 img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 cv2.imwrite("test.png", img)
-img_croped = face_detect_crop.face_crop(img, 'path')
+img_croped = face_crop(img, 'path')
 
 
 img_array = np.array([img_croped])

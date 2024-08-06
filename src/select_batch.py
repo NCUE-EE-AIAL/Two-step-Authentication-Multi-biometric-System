@@ -20,7 +20,7 @@ import src.constants as c
 from src.utils import get_last_checkpoint_if_any
 from src.models import rescnn_model
 from src.triplet_loss import deep_speaker_loss
-from pre_process import data_catalog
+from voice_preprocessing import data_catalog
 
 alpha = c.ALPHA
 
