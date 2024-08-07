@@ -1,4 +1,14 @@
 # Two-step-Authentication-Muti-biometric-System
+
+## Table of Contents
+
+- [Dataset](#dataset)
+- [Architecture](#architecture)
+- [How to use](#how-to-use)
+- [Result](#result)
+- [Accuracy](#accuracy)
+- [Acknowledge](#acknowledge)
+
 # Dataset: 
 Face image: the raw data are provided by the student in EE's class, which is revealed in dataset folder.  
 Voice: LibriSpeech (Link: https://www.openslr.org/12) (train-clean-360 , test-clean)
@@ -73,5 +83,9 @@ Graph for epochs of face recognition model showing (a) Training and validation a
 ![voice result](https://github.com/NCUE-EE-AIAL/Two-Step-Muti-Biometric-Authentication-System/blob/main/doc/training_graph_voice.png)
 Graph for epochs of voice recognition model showing (a) Training and validation EER (b) Training and validation loss.
 
+## Accuracy
+Face Recognision Model using VGG16: 95.135%
+Voice Recognision Model using CNN: 99.1%
+
 # Acknowledge
-This research is supported by TEEP (Taiwan Experience Education Program)
+This research is supported by TEEP (Taiwan Experience Education Program) at National Changhua University of Education
