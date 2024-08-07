@@ -1,4 +1,4 @@
-# TEEP2023_Mutimodal_Biometric_Authentication
+# Two-step-Authentication-Muti-biometric-System
 # Dataset: 
 Face image: the raw data are provided by the student in EE's class, which is revealed in dataset folder.  
 Voice: LibriSpeech (Link: https://www.openslr.org/12) (train-clean-360 , test-clean)
