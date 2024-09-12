@@ -75,10 +75,10 @@ To optimize performance, training is divided into two stages: initial training w
 This script evaluates a speaker verification model using triplet loss. It imports necessary libraries and custom modules, normalizes scores, clips audio sequences, and generates test data. The model's performance is assessed using cosine similarity, and metrics like accuracy, equal error rate, f-measure, precision, and recall are calculated.
 
 # Result
-| System                          | Accuracy   | Precision  | Recall     |
-|---------------------------------|------------|------------|------------|
-| Face Recognition Model          | 95.135%    | 96.317%    | 95.153%    |
-| Voice Recognition Model         | 99.1%      | 88.57%     | 84.93%     |
+| System                          | Accuracy   | Equal Error Rate | Precision  | Recall     |
+|---------------------------------|------------|------------------|------------|------------|
+| Face Recognition Model          | 95.135%    |        -         |  96.317%   |  95.153%   |
+| Voice Recognition Model         | 99.1%      |      3.456%      |  86.48%    |  88.65%    |
 
 ![face result](https://github.com/NCUE-EE-AIAL/Two-Step-Muti-Biometric-Authentication-System/blob/main/doc/training_graph.png)
 Graph for epochs of face recognition model showing (a) Training and validation accuracy (b) Training and validation loss.  
