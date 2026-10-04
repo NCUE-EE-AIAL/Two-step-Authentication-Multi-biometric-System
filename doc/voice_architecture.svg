@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1040" viewBox="0 0 1200 1040" role="img" aria-labelledby="title desc">
+<title id="title">ResCNN speaker encoder: architecture, residual blocks and training objective</title>
+<desc id="desc">Panel a traces the 160 by 64 input through stages with 64, 128, 256 and 512 channels, temporal averaging, a 512-unit dense layer and L2 normalization. Panel b expands one downsampling stage. Panel c expands the three-convolution identity block with its skip connection. Panel d states cosine triplet loss for 32 triplets. Tensor dimensions omit batch size; white background is fixed.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="8" markerHeight="6.4" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0L10 4L0 8Z" fill="#202020"/></marker></defs>
+<rect id="background" width="1200" height="1040" fill="#ffffff"/>
+<text x="36" y="44" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(a)</text>
+<text x="76" y="44" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Speaker encoder</text>
+<text x="76" y="71" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">Input: normalized 64-filter Fbank features, 160 frames (approximately 1.6 s)</text>
+<rect x="36" y="104" width="200" height="96" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="136.0" y="147.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Input</text>
+<text x="136.0" y="169.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">160 × 64 × 1</text>
+<rect x="268" y="104" width="200" height="96" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="368.0" y="136.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Stage 1</text>
+<text x="368.0" y="158.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">64 channels</text>
+<text x="368.0" y="180.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">80 × 32 × 64</text>
+<path d="M236 152H268" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="500" y="104" width="200" height="96" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="600.0" y="136.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Stage 2</text>
+<text x="600.0" y="158.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">128 channels</text>
+<text x="600.0" y="180.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">40 × 16 × 128</text>
+<path d="M468 152H500" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="732" y="104" width="200" height="96" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="832.0" y="136.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Stage 3</text>
+<text x="832.0" y="158.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">256 channels</text>
+<text x="832.0" y="180.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">20 × 8 × 256</text>
+<path d="M700 152H732" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="964" y="104" width="200" height="96" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1064.0" y="136.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Stage 4</text>
+<text x="1064.0" y="158.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">512 channels</text>
+<text x="1064.0" y="180.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">10 × 4 × 512</text>
+<path d="M932 152H964" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M1064 200V228H136V256" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="36" y="256" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="136.0" y="295.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Reshape</text>
+<text x="136.0" y="317.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">10 × 2048</text>
+<rect x="268" y="256" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="368.0" y="295.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Mean over time</text>
+<text x="368.0" y="317.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">2048</text>
+<path d="M236 300H268" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="500" y="256" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="600.0" y="295.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Dense</text>
+<text x="600.0" y="317.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">512 units</text>
+<path d="M468 300H500" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="732" y="256" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="832.0" y="295.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">L2 normalization</text>
+<text x="832.0" y="317.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">z = h / ‖h‖₂</text>
+<path d="M700 300H732" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="964" y="256" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1064.0" y="284.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Embedding</text>
+<text x="1064.0" y="306.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">512 dimensions</text>
+<text x="1064.0" y="328.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">‖z‖₂ = 1</text>
+<path d="M932 300H964" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<text x="36" y="374" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">Tensor order: time × frequency × channels. Batch dimension omitted; every stage halves time and frequency.</text>
+<path d="M36 397H1164" fill="none" stroke="#b0b0b0" stroke-width="1" stroke-linejoin="round" />
+<text x="36" y="436" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(b)</text>
+<text x="76" y="436" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Residual stage</text>
+<text x="76" y="463" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">Same structure at all four stages; C = 64, 128, 256 or 512 output channels</text>
+<rect x="36" y="490" width="200" height="94" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="136.0" y="521.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Conv 5 × 5</text>
+<text x="136.0" y="543.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">C filters; stride 2</text>
+<text x="136.0" y="565.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Same padding</text>
+<rect x="268" y="490" width="200" height="94" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="368.0" y="532.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">BatchNorm</text>
+<text x="368.0" y="554.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Channel normalization</text>
+<path d="M236 537H268" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="500" y="490" width="200" height="94" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="600.0" y="532.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Clipped ReLU</text>
+<text x="600.0" y="554.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">min(max(x, 0), 20)</text>
+<path d="M468 537H500" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="732" y="490" width="200" height="94" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="832.0" y="521.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Identity block × 3</text>
+<text x="832.0" y="543.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">C channels</text>
+<text x="832.0" y="565.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Expanded in panel (c)</text>
+<path d="M700 537H732" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="964" y="490" width="200" height="94" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1064.0" y="532.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Stage output</text>
+<text x="1064.0" y="554.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">T/2 × F/2 × C</text>
+<path d="M932 537H964" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M36 609H1164" fill="none" stroke="#b0b0b0" stroke-width="1" stroke-linejoin="round" />
+<text x="36" y="648" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(c)</text>
+<text x="76" y="648" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Identity block</text>
+<text x="76" y="675" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">Spatial dimensions and channel count are preserved; all convolutions use stride 1.</text>
+<text x="518" y="710" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Identity shortcut</text>
+<path d="M94 784V725H884V766" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<circle cx="94" cy="784" r="3" fill="#202020"/>
+<text x="45" y="790" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" text-anchor="start" fill="#202020">x</text>
+<path d="M66 784H140" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="140" y="740" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="240.0" y="768.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Conv 1 × 1</text>
+<text x="240.0" y="790.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">C filters</text>
+<text x="240.0" y="812.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">BN + clipped ReLU</text>
+<rect x="380" y="740" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="480.0" y="768.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Conv 3 × 3</text>
+<text x="480.0" y="790.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">C filters</text>
+<text x="480.0" y="812.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">BN + clipped ReLU</text>
+<rect x="620" y="740" width="200" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="720.0" y="768.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Conv 1 × 1</text>
+<text x="720.0" y="790.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">C filters</text>
+<text x="720.0" y="812.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">BatchNorm</text>
+<path d="M340 784H380" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M580 784H620" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M820 784H866" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<circle cx="884" cy="784" r="18" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="884" y="791" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="400" text-anchor="middle" fill="#202020">+</text>
+<path d="M902 784H944" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="944" y="740" width="220" height="88" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1054.0" y="779.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Clipped ReLU</text>
+<text x="1054.0" y="801.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Output: T × F × C</text>
+<path d="M36 856H1164" fill="none" stroke="#b0b0b0" stroke-width="1" stroke-linejoin="round" />
+<text x="36" y="895" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(d)</text>
+<text x="76" y="895" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Training objective</text>
+<text x="36" y="928" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" text-anchor="start" fill="#202020">Anchor a, same-speaker positive p, and different-speaker negative n share the encoder weights.</text>
+<text x="600" y="964" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="400" text-anchor="middle" fill="#202020">L = Σᵢ max[cos(aᵢ, nᵢ) − cos(aᵢ, pᵢ) + 0.1, 0]</text>
+<text x="36" y="997" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">32 triplets per batch (96 clips). Random triplets: epochs 0–20; hard-mined triplets: epochs 21–60.</text>
+<text x="36" y="1023" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">Sources: src/models.py, src/triplet_loss.py, src/constants.py and train_voice.py. BN = batch normalization.</text>
+</svg>

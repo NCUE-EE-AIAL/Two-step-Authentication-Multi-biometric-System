@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570" role="img" aria-labelledby="title desc">
+<title id="title">Two-step biometric authentication workflow</title>
+<desc id="desc">Redrawn from the original project workflow. A face match selects the enrolled voice reference. The recorded voice and selected reference enter speaker verification. Either failed decision denies access. White background and black lines remain fixed in all display themes. The integrated controller is a proposed design.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="8" markerHeight="6.4" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0L10 4L0 8Z" fill="#202020"/></marker></defs>
+<rect id="background" width="1200" height="570" fill="#ffffff"/>
+<text x="36" y="48" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(a)</text>
+<text x="76" y="48" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Face identification</text>
+<text x="76" y="75" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">Identify a candidate among the enrolled users.</text>
+<rect x="36" y="112" width="122" height="64" rx="32.0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="97.0" y="150.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Login</text>
+<polygon points="208,112 370,112 352,176 190,176" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="280.0" y="150.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Image capture</text>
+<rect x="408" y="99" width="254" height="90" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="535.0" y="128.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Face identification</text>
+<text x="535.0" y="150.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">MTCNN → VGG16</text>
+<text x="535.0" y="172.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Candidate identity i*</text>
+<polygon points="848.0,91 968,144.0 848.0,197 728,144.0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="848.0" y="139.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Face match?</text>
+<text x="848.0" y="161.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">max p(i | x) &gt; 0.75</text>
+<rect x="1042" y="112" width="122" height="64" rx="32.0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1103.0" y="150.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Denied</text>
+<path d="M158 144H190" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M370 144H408" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M662 144H728" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M968 144H1042" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<text x="1004" y="132" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">No</text>
+<path d="M848 197V228H535V254" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<text x="864" y="222" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">Yes</text>
+<rect x="408" y="254" width="254" height="68" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="535.0" y="283.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Select voice reference</text>
+<text x="535.0" y="305.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Enrolled embedding for i*</text>
+<text x="36" y="344" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(b)</text>
+<text x="76" y="344" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Speaker verification</text>
+<polygon points="72,389 336,389 318,467 54,467" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="195.0" y="423.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Audio recording</text>
+<text x="195.0" y="445.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Claimed user’s speech</text>
+<rect x="408" y="378" width="254" height="100" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="535.0" y="412.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Speaker verification</text>
+<text x="535.0" y="434.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">ResCNN embeddings</text>
+<text x="535.0" y="456.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Cosine similarity s</text>
+<polygon points="848.0,375 968,428.0 848.0,481 728,428.0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="848.0" y="423.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Voice match?</text>
+<text x="848.0" y="445.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">s &gt; threshold τ</text>
+<rect x="1042" y="396" width="122" height="64" rx="32.0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1103.0" y="434.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Pass</text>
+<path d="M336 428H408" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M535 322V378" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M662 428H728" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M968 428H1042" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M848 375V296H1103V176" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<text x="1003" y="415" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Yes</text>
+<text x="869" y="284" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">No</text>
+<path d="M36 512H1164" fill="none" stroke="#b0b0b0" stroke-width="1" stroke-linejoin="round" />
+<text x="36" y="541" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">System design: both gates must pass. The released code evaluates the two branches separately.</text>
+</svg>

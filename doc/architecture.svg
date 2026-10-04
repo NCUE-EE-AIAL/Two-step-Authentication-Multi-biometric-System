@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="590" viewBox="0 0 1200 590" role="img" aria-labelledby="title desc">
+<title id="title">Face and voice model architecture summary</title>
+<desc id="desc">Two aligned model summaries. Face images are cropped to 224 by 224, processed by VGG16 and a dense classifier. Speech is represented as 160 by 64 filter-bank features and processed by four ResCNN stages to a 512-dimensional embedding. Dimensions omit the batch axis. All backgrounds and nodes are white.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="8" markerHeight="6.4" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0L10 4L0 8Z" fill="#202020"/></marker></defs>
+<rect id="background" width="1200" height="590" fill="#ffffff"/>
+<text x="36" y="46" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(a)</text>
+<text x="76" y="46" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Face identification</text>
+<text x="76" y="73" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">VGGFace-initialized VGG16 with a five-class classification head</text>
+<rect x="36" y="112" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="120.0" y="159.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Image</text>
+<text x="120.0" y="181.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">H × W × 3</text>
+<rect x="228" y="112" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="312.0" y="148.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">MTCNN crop</text>
+<text x="312.0" y="170.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Resize</text>
+<text x="312.0" y="192.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">224 × 224 × 3</text>
+<path d="M204 164H228" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="420" y="112" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="504.0" y="148.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">VGG16 base</text>
+<text x="504.0" y="170.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">13 convolutions</text>
+<text x="504.0" y="192.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">7 × 7 × 512</text>
+<path d="M396 164H420" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="612" y="112" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="696.0" y="159.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Flatten</text>
+<text x="696.0" y="181.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">25 088</text>
+<path d="M588 164H612" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="804" y="112" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="888.0" y="148.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Dense head</text>
+<text x="888.0" y="170.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">256 → 128</text>
+<text x="888.0" y="192.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">ReLU activations</text>
+<path d="M780 164H804" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="996" y="112" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1080.0" y="148.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Dense + softmax</text>
+<text x="1080.0" y="170.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">5 probabilities</text>
+<text x="1080.0" y="192.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Threshold &gt; 0.75</text>
+<path d="M972 164H996" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<text x="36" y="248" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">Head: Dense 256 → Dropout (0.5) → Dense 128 → Dense 5; L2 regularization on hidden dense layers.</text>
+<text x="36" y="274" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">Training: freeze the convolutional base for 10 epochs, then fine-tune all layers for 10 epochs (Adam, LR 10⁻⁵).</text>
+<path d="M36 301H1164" fill="none" stroke="#b0b0b0" stroke-width="1" stroke-linejoin="round" />
+<text x="36" y="340" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">(b)</text>
+<text x="76" y="340" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" text-anchor="start" fill="#202020">Speaker verification</text>
+<text x="76" y="367" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">Residual CNN with cosine triplet loss; independent of the face classifier</text>
+<rect x="36" y="405" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="120.0" y="441.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Speech</text>
+<text x="120.0" y="463.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">16 kHz mono</text>
+<text x="120.0" y="485.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Voice activity filter</text>
+<rect x="228" y="405" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="312.0" y="441.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Fbank features</text>
+<text x="312.0" y="463.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">64 filters</text>
+<text x="312.0" y="485.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">160 × 64 × 1</text>
+<path d="M204 457H228" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="420" y="405" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="504.0" y="441.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">ResCNN × 4</text>
+<text x="504.0" y="463.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">64 / 128 / 256 / 512</text>
+<text x="504.0" y="485.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">10 × 4 × 512</text>
+<path d="M396 457H420" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="612" y="405" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="696.0" y="441.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Temporal mean</text>
+<text x="696.0" y="463.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Reshape: 10 × 2048</text>
+<text x="696.0" y="485.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">2048</text>
+<path d="M588 457H612" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="804" y="405" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="888.0" y="441.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Dense + L2 norm</text>
+<text x="888.0" y="463.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">512-dimensional</text>
+<text x="888.0" y="485.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Unit-length vector</text>
+<path d="M780 457H804" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="996" y="405" width="168" height="104" rx="0" fill="#ffffff" stroke="#202020" stroke-width="1.5"/>
+<text x="1080.0" y="441.0" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#202020">Cosine score</text>
+<text x="1080.0" y="463.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Reference + query</text>
+<text x="1080.0" y="485.0" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="middle" fill="#202020">Threshold decision</text>
+<path d="M972 457H996" fill="none" stroke="#202020" stroke-width="1.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<text x="36" y="546" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#202020">Shapes omit the batch axis. Voice scoring uses recorded pairs in the released evaluation code.</text>
+<text x="36" y="573" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" text-anchor="start" fill="#505050">Architecture sources: train_face.ipynb, src/models.py and src/constants.py.</text>
+</svg>
