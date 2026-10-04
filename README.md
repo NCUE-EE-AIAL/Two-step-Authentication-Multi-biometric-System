@@ -10,8 +10,8 @@
 
 <p align="center">
 <strong>Identify with the face, verify with the voice.</strong><br/>
-A research design that first <em>identifies</em> a user with a fine-tuned <strong>VGG16</strong> face classifier (MTCNN-cropped),
-then <em>verifies</em> them with a <strong>ResNet speaker encoder</strong> trained with triplet loss. The design uses an ordinary webcam and microphone.
+A two-step research design using a <strong>VGG16 face classifier</strong> and a <strong>ResCNN speaker encoder</strong>,
+with an ordinary webcam and microphone.
 </p>
 
 <!-- Quick Links -->
@@ -28,14 +28,13 @@ then <em>verifies</em> them with a <strong>ResNet speaker encoder</strong> train
 
 ## How It Works
 
-Authentication is a **two-gate pipeline**. Step 1 answers *who is this?* Step 2 answers *can they prove it?*
-Both gates must pass in the proposed system.
+The face classifier identifies an enrolled user. Speaker verification then compares their voice with the selected reference. **Both steps must pass.**
 
-**Implementation status:** this repository runs the two branches separately. `test_face.py` captures one webcam frame; `test_voice.py` evaluates recorded LibriSpeech audio. Live microphone capture, voiceprint enrollment, and the combined authentication controller are not implemented.
+**Implementation status:** the branches run separately. `test_face.py` captures a webcam frame; `test_voice.py` evaluates recorded audio. Live microphone capture, voiceprint enrollment, and a combined controller are not implemented.
 
 <div align="center"><img src="doc/workflow.svg" alt="Two-step authentication: a face match selects the enrolled voice reference; speaker verification then grants or denies access" width="1000"/></div>
 
-*Figure 1. Authentication workflow redrawn from the original system diagram. The matched face identity selects the reference used for voice verification; failure at either gate denies access.*
+*Figure 1. Two-step authentication, redrawn from the original workflow. A face match selects the voice reference; either failed check denies access.*
 
 <details>
 <summary>Original flow diagram (PNG)</summary>
@@ -48,11 +47,11 @@ Both gates must pass in the proposed system.
 
 | Component | Face branch | Voice branch |
 |---|---|---|
-| **Model** | 👤 VGG16 conv base (VGGFace weights) + custom FC head, softmax over enrolled users | 🔊 Deep-Speaker style **ResCNN**, 4 residual stages → 512-d L2-normalised embedding |
-| **Pre-processing** | MTCNN detection, bounding-box padding, resize to 224×224, Albumentations augmentation (flip, brightness/contrast, gamma, blur, noise) | FLAC→WAV, energy-based **VAD**, 64-filter **Fbank**, per-frame normalisation, 160-frame clips |
-| **Training** | 🔄 Two stages: FC head with frozen base → unfreeze all and fine-tune at LR 1e-5 | 🔄 Two stages: random triplets (epochs 0–20) → **hard-triplet mining** (epochs 21–60) with cosine triplet loss |
-| **Decision** | ⚡ Accept `argmax` only when softmax probability > 0.75 | ⚡ Design: compare input with enrolled embedding; code: score recorded pairs across thresholds |
-| **Evaluation** | 📊 Accuracy, precision, recall, confusion matrix | 📊 Accuracy, precision, recall and F-measure at the best-F1 threshold; **EER** at FAR ≈ FRR |
+| **Model** | VGG16 with VGGFace weights and a custom classifier | Four-stage ResCNN with a 512-dimensional unit embedding |
+| **Preprocessing** | MTCNN crop, 224×224 resize, image augmentation | FLAC→WAV, voice activity detection, 64-filter Fbank, normalization |
+| **Training** | Train the classifier, then fine-tune all layers | Random triplets, then hard-triplet mining |
+| **Decision** | Accept the predicted class if probability > 0.75 | Cosine similarity; evaluation sweeps decision thresholds |
+| **Evaluation** | Accuracy, precision, recall, confusion matrix | Accuracy, precision, recall and F1 at best-F1 threshold; EER at FAR ≈ FRR |
 
 ---
 
@@ -60,15 +59,15 @@ Both gates must pass in the proposed system.
 
 ### Pipeline at a glance
 
-The model summaries trace inputs through the face classifier and speaker encoder. Tensor dimensions omit the batch axis and follow `train_face.ipynb`, `src/models.py` and `src/constants.py`. All diagrams use a fixed white background for consistent viewing and print export.
+Dimensions follow `train_face.ipynb`, `src/models.py` and `src/constants.py`, with the batch axis omitted. All figures have a fixed white background.
 
 <div align="center"><img src="doc/architecture.svg" alt="Face and voice model architecture with tensor shapes" width="1000"/></div>
 
-*Figure 2. Model overview: (a) VGG16 face identification; (b) ResCNN speaker verification. The two branches are trained independently.*
+*Figure 2. Independently trained models: (a) VGG16 face identification; (b) ResCNN speaker verification.*
 
 ### Face recognition model
 
-Fine-tuned **VGG16** with the top removed. Weights are loaded from a VGGFace checkpoint (`vgg_face_weights.h5`, not included), then a small classification head is trained in two stages.
+**VGG16** uses external VGGFace weights (`vgg_face_weights.h5`) and a custom classification head, trained in two stages:
 
 | Stage | Trainable layers | Optimiser | Epochs | Batch |
 |---|---|---|---|---|
@@ -82,13 +81,13 @@ Fine-tuned **VGG16** with the top removed. Weights are loaded from a VGGFace che
 
 ### Voice recognition model
 
-Residual CNN speaker encoder trained with **cosine triplet loss** (margin α = 0.1). Input is a 160 × 64 filter-bank map (≈1.6 s of speech); output is a 512-d unit-length embedding.
+**ResCNN** maps 160 × 64 speech features (≈1.6 s) to a 512-dimensional unit embedding, using cosine triplet loss with margin 0.1.
 
 <div align="center"><img src="doc/voice_architecture.svg" alt="ResCNN speaker architecture: tensor shapes across four stages, temporal pooling and 512-dimensional embedding, residual stage expansion, identity shortcut, and cosine triplet loss" width="1000"/></div>
 
-*Figure 3. Speaker encoder architecture: (a) full forward pass; (b) residual stage; (c) identity block with additive shortcut; (d) cosine triplet-loss training. All four stages use a stride-2 convolution followed by three identity blocks. C denotes the channel count; T and F denote time and frequency dimensions.*
+*Figure 3. Speaker encoder: (a) forward pass; (b) residual stage; (c) identity shortcut; (d) triplet loss. Each stage has a stride-2 convolution and three identity blocks. T, F and C denote time, frequency and channels.*
 
-[Open full-size voice architecture](doc/voice_architecture.svg). The SVGs contain editable text and remain white in light and dark viewers. Regenerate them with `python3 doc/generate_figures.py` (requires `pycairo`).
+[Full-size voice architecture](doc/voice_architecture.svg). Regenerate the editable SVGs with `python3 doc/generate_figures.py` (requires `pycairo`).
 
 <details>
 <summary>Voice model Mermaid source</summary>
@@ -144,8 +143,8 @@ graph TD
 
 | Modality | Source | Details |
 |---|---|---|
-| **Face** | Custom, collected from EE class students | 5 subjects, 462 MTCNN-cropped frames → 924 after augmentation, 80/20 split. Cropped images in `Dataset/output_dataset/`; labels in `Dataset/output_dataset.csv`. |
-| **Voice** | [LibriSpeech](https://www.openslr.org/12) | `train-clean-360` for training, `test-clean` (40 speakers) for evaluation. Speaker ID is parsed from the `<speaker>-<chapter>-<utt>` filename. |
+| **Face** | Custom student dataset | 5 subjects; 462 crops → 924 augmented images; 80/20 split. Images: `Dataset/output_dataset/`; labels: `Dataset/output_dataset.csv`. |
+| **Voice** | [LibriSpeech](https://www.openslr.org/12) | `train-clean-360` for training; `test-clean` (40 speakers) for evaluation. Filenames use `<speaker>-<chapter>-<utt>`. |
 
 ---
 
@@ -153,7 +152,7 @@ graph TD
 
 ### Requirements
 
-Use Python 3.10 and a **TensorFlow 2 / Keras 2** environment. The code uses legacy imports such as `keras.layers.convolutional`; an unpinned install of current Keras is unsuitable. There is no dependency lockfile. The following is an inferred starting environment, not an end-to-end validated setup:
+Use **Python 3.10 with TensorFlow 2 / Keras 2** for the legacy imports. This suggested environment is not fully validated; the project has no dependency lockfile:
 
 ```bash
 python3.10 -m venv .venv
@@ -165,20 +164,20 @@ python -m pip install "tensorflow==2.12.*" "keras==2.12.*" "numpy<1.24" \
     python_speech_features pydub jupyter "setuptools<81"
 ```
 
-The legacy layer paths are present in [Keras 2.12](https://github.com/keras-team/keras/blob/v2.12.0/keras/layers/__init__.py). Platform-specific TensorFlow installation may be needed on Apple Silicon. Install **ffmpeg** for FLAC conversion; notebook layer-graph export also needs **Graphviz** and `pydot`.
+[Keras 2.12](https://github.com/keras-team/keras/blob/v2.12.0/keras/layers/__init__.py) includes the required legacy imports. Apple Silicon may need a platform-specific TensorFlow build. Install **ffmpeg** for FLAC conversion, plus **Graphviz** and `pydot` for optional layer-graph export.
 
 ### Required assets
 
 | Asset | Used by | Availability |
 |---|---|---|
 | Cropped face images and label index | `train_face.ipynb` | Included in `Dataset/output_dataset/` and `Dataset/output_dataset.csv` |
-| `mtcnn/data/mtcnn_weights.npy` | `image_preprocessing.py`, `test_face.py` | Missing; supply weights compatible with the vendored MTCNN implementation before face detection |
-| `vgg_face_weights.h5` | `train_face.ipynb` | External VGGFace weights, loaded into the VGG16 base with `by_name=True` |
-| `face_model_vggface.h5` | `test_face.py` | Save the trained notebook model explicitly; see the face pipeline below |
+| `mtcnn/data/mtcnn_weights.npy` | `image_preprocessing.py`, `test_face.py` | Missing; supply weights compatible with the bundled MTCNN |
+| `vgg_face_weights.h5` | `train_face.ipynb` | External VGGFace weights, loaded with `by_name=True` |
+| `face_model_vggface.h5` | `test_face.py` | Save from the notebook after training |
 | LibriSpeech `train-clean-360`, `test-clean` | Voice preprocessing and evaluation | Download separately from [OpenSLR](https://www.openslr.org/12) |
-| `checkpoints_sample/model_60_64440_0.55928.h5` | `test_voice.py` | Included; copy into the configured checkpoint folder to evaluate without training |
+| `checkpoints_sample/model_60_64440_0.55928.h5` | `test_voice.py` | Included; copy to `checkpoints/` to skip training |
 
-MTCNN source is vendored under `mtcnn/` (MIT, Iván de Paz Centeno). Installing another `mtcnn` package does not supply the missing file to this local package automatically.
+The bundled `mtcnn/` package needs its own weights file; installing another MTCNN package does not fill this gap.
 
 ### Configure paths first
 
@@ -186,14 +185,14 @@ Run commands from the repository root after updating these paths:
 
 | File | Required configuration |
 |---|---|
-| `image_preprocessing.py` | Change `pd.read_csv("dataset.csv")` to `Dataset/dataset.csv`; set raw-image and crop-output folders. Raw images are needed only to regenerate crops. |
-| `dataset_mine.py` | Point `parent_directory` at the crop folder and write its index to `Dataset/output_dataset.csv`, matching the notebook. |
-| `train_face.ipynb` | Replace absolute paths for VGGFace weights, the CSV, crop folder and metric exports. The classifier has five outputs; adapt it for a different number of subjects. |
-| `src/constants.py` | Align `WAV_DIR`, `DATASET_DIR` and `TEST_DIR` with your audio/features folders. `WAV_DIR` currently names `train-clean-100`, while `DATASET_DIR` names `train-clean-360-npy`. |
-| `voice_preprocessing.py` | Edit the explicit paths in the `__main__` block too: they currently process only `audio/test-clean/LibriSpeech/test-clean/`, overriding the defaults in `src/constants.py`. |
-| `test_face.py` | Set the webcam index in `cv2.VideoCapture(1)` for your device and place the saved face model at the path passed to `load_model`. |
+| `image_preprocessing.py` | Read `Dataset/dataset.csv`; set raw-image and crop-output folders if regenerating crops. |
+| `dataset_mine.py` | Set `parent_directory` to the crop folder; write `Dataset/output_dataset.csv`. |
+| `train_face.ipynb` | Update weights, CSV, crop and export paths. Adjust the five-output classifier if changing subjects. |
+| `src/constants.py` | Set `WAV_DIR`, `DATASET_DIR` and `TEST_DIR`. Defaults mix `train-clean-100` audio with `train-clean-360-npy` features. |
+| `voice_preprocessing.py` | Update `__main__` paths too: they override the constants and process only `audio/test-clean/LibriSpeech/test-clean/`. |
+| `test_face.py` | Set the camera index in `cv2.VideoCapture(1)` and the saved model path in `load_model`. |
 
-The voice feature output folders must exist and their `out_dir` arguments must end with `/`: `prep()` constructs filenames by concatenating strings. Prepare both training and test features before training.
+Create voice feature folders first and end each `out_dir` with `/`. Prepare both training and test features.
 
 ### Project structure
 
@@ -223,7 +222,7 @@ The voice feature output folders must exist and their `out_dir` arguments must e
 
 ### Face pipeline
 
-The included crops let you start with the notebook. To regenerate crops from your own raw images, configure the paths above and run:
+Start with the included crops, or configure the paths above and regenerate them:
 
 ```bash
 python image_preprocessing.py
@@ -241,24 +240,24 @@ jupyter notebook train_face.ipynb
 model.save("face_model_vggface.h5")
 ```
 
-The plotting cells use `final_val_acc` and `final_val_loss` before they are assigned. Run their metric-assembly cells before plotting, or skip the plotting/export cells when training. Preserve the notebook's label mapping to interpret the predicted class index.
+Before plotting, run the cells that define `final_val_acc` and `final_val_loss`, or skip plot/export cells. Keep the notebook’s label mapping to interpret class indices.
 
 ```bash
 python test_face.py
 ```
 
-**Face test prerequisite:** importing `face_crop` also reads the dataset CSV and runs the cropping job in `image_preprocessing.py`. Its paths and detector weights must be configured even when testing only a webcam frame. The test prints a class index when its softmax probability exceeds 0.75.
+**Before testing:** importing `face_crop` runs the dataset cropping job, so its CSV, paths and detector weights must be configured. The test prints the class index when probability exceeds 0.75.
 
 ### Voice pipeline
 
-With the default feature paths in `src/constants.py`, create the output and checkpoint folders:
+Create folders matching the defaults in `src/constants.py`:
 
 ```bash
 mkdir -p audio/LibriSpeech/train-clean-360-npy audio/LibriSpeech/test-clean-npy
 mkdir -p checkpoints/best_checkpoint
 ```
 
-Set the two calls in the `voice_preprocessing.py` main block to process training audio, then run the script:
+Set the `voice_preprocessing.py` main block to process training audio:
 
 ```python
 cvt_process_and_save("audio/LibriSpeech/train-clean-360/",
@@ -271,7 +270,7 @@ preprocess_and_save("audio/LibriSpeech/train-clean-360/",
 python voice_preprocessing.py
 ```
 
-Repeat with `test-clean` and `test-clean-npy` in those calls. Ensure the resulting `.npy` folders match `DATASET_DIR` and `TEST_DIR`.
+Repeat for `test-clean` → `test-clean-npy`. Output folders must match `DATASET_DIR` and `TEST_DIR`.
 
 Choose either training or the included checkpoint:
 
@@ -291,11 +290,11 @@ Then evaluate:
 python test_voice.py
 ```
 
-Evaluation runs ten randomized trials on `TEST_DIR`. It selects the latest checkpoint by filename; confirm the printed path is the model you intend to evaluate. Without a checkpoint, it evaluates randomly initialized weights.
+Evaluation runs ten randomized trials on `TEST_DIR`. Check the printed checkpoint path: selection is by filename, and a missing checkpoint leaves random weights.
 
-Training writes `checkpoints/train_acc_eer_loss.txt` and `checkpoints/val_acc_eer_loss.txt`, saves recent and improving-EER checkpoints, and plots the logs on completion.
+Training saves checkpoints and logs to `checkpoints/`, then plots `train_acc_eer_loss.txt` and `val_acc_eer_loss.txt`.
 
-> **Evaluation output caveat:** the final print statement in `test_voice.py` mislabels F-measure as precision and precision as recall. For those metrics, use the values returned by `eval_model`: `(fm, tpr, acc, eer, precision)`.
+> **Metric labels:** `test_voice.py` prints F1 as precision and precision as recall. Use `eval_model`’s return order: `(fm, tpr, acc, eer, precision)`.
 
 ---
 
@@ -310,11 +309,11 @@ Training writes `checkpoints/train_acc_eer_loss.txt` and `checkpoints/val_acc_ee
 
 </div>
 
-These values are retained from the original project README. They are reported branch-level results, not a measured success rate for the combined authentication design. The [arXiv abstract](https://arxiv.org/abs/2601.06218) instead lists 95.1% face accuracy and 98.9% voice accuracy, and names `train-other-360`; the code's training feature path names `train-clean-360`.
+These are the original README’s results for each branch; combined authentication accuracy was not measured. The [arXiv abstract](https://arxiv.org/abs/2601.06218) lists 95.1% face and 98.9% voice accuracy, using `train-other-360`; the code names `train-clean-360`.
 
-The notebook records **98.38%** face accuracy, while the sample checkpoint's final validation log records **98.97%** voice accuracy and **6.30% EER**. These artifacts do not reproduce every value in the table. The face notebook augments images before its 80/20 split, so original and augmented versions can occur on opposite sides of the split.
+Saved artifacts differ: the notebook records **98.38%** face accuracy; the sample voice log records **98.97%** accuracy and **6.30% EER**. Face augmentation occurs before splitting, so related images may appear in both sets.
 
-Standalone voice evaluation samples 1 positive and 99 negatives per anchor; accuracy is therefore dominated by true rejections. Read precision, recall and EER alongside accuracy.
+Voice evaluation uses 1 positive and 99 negatives per anchor, making accuracy sensitive to true rejections. Consider precision, recall and EER together.
 
 <div align="center">
 
@@ -359,7 +358,7 @@ Publication metadata follows the [arXiv journal reference](https://arxiv.org/abs
 
 This research is supported by **TEEP** (Taiwan Experience Education Program) at **National Changhua University of Education**.
 
-The voice branch builds on the Deep Speaker approach (ResCNN + triplet loss) and its open-source Keras implementations. Face detection uses the MIT-licensed MTCNN package by Iván de Paz Centeno.
+The voice model builds on Deep Speaker and its Keras implementations. Face detection uses Iván de Paz Centeno’s MIT-licensed MTCNN.
 
 ---
 
